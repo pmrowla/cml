@@ -601,11 +601,13 @@ class Github {
 
     const jobs = await Promise.all(
       runnerJobs.map(async (job) => {
-        const { data } = await actions.getJobForWorkflowRun({
+        const res = await actions.getJobForWorkflowRun({
           owner,
           repo,
           job_id: job.id
         });
+        winston.info('actions.getJobForWorkflowRun', res);
+        const { data } = res;
 
         return data;
       })
@@ -625,24 +627,28 @@ class Github {
     let { status = 'queued' } = opts;
     if (status === 'running') status = 'in_progress';
 
-    const {
-      data: { workflow_runs: workflowRuns }
-    } = await actions.listWorkflowRunsForRepo({
+    const res = await actions.listWorkflowRunsForRepo({
       owner,
       repo,
       status
     });
+    winston.info('actions.listWorkflowRunsForRepo', res);
+    const {
+      data: { workflow_runs: workflowRuns }
+    } = res;
 
     let runJobs = await Promise.all(
       workflowRuns.map(async (run) => {
-        const {
-          data: { jobs }
-        } = await actions.listJobsForWorkflowRun({
+        const res = await actions.listJobsForWorkflowRun({
           owner,
           repo,
           run_id: run.id,
           status
         });
+        winston.info('actions.listJobsForWorkflowRun', res);
+        const {
+          data: { jobs }
+        } = res;
 
         return jobs;
       })
